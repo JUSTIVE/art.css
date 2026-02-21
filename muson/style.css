@@ -178,12 +178,7 @@ body {
 
     background-image:
         radial-gradient(rgba(255, 222, 213, 0.25), rgba(255, 222, 213, 0) 60%),
-        repeating-linear-gradient(
-            #f8d2c5 0 24%,
-            #fdd9c9 25% 49%,
-            #f6d1bf 50% 74%,
-            #fdd4c0 75% 100%
-        );
+        repeating-linear-gradient(#f8d2c5 0 24%, #fdd9c9 25% 49%, #f6d1bf 50% 74%, #fdd4c0 75% 100%);
     background-size:
         100% 100%,
         4px 4px;
@@ -381,7 +376,8 @@ body {
     transition: all 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
     cursor: pointer;
 }
-.key-container > div:hover {
+.key-container > div:hover,
+.key-container > div.pressed {
     box-shadow:
         -5px 0 4px -2px #edecfa inset,
         -8px 0 6px -6px #ebeff8 inset,
@@ -393,7 +389,7 @@ body {
         -2px -2px 1px -0.5px rgba(150, 90, 64, 0.5),
         -2px -1px 2px rgba(201, 149, 135, 0.55),
         -3px -3px 15px rgba(201, 149, 135, 0.25);
-    transition: all 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
+    transition: all 0.15s cubic-bezier(0.075, 0.82, 0.165, 1);
     transform: scaleY(0.96);
     transform-origin: bottom center;
 }
@@ -745,11 +741,7 @@ body {
     top: 15px;
     left: -1px;
 
-    background-image: linear-gradient(
-        var(--center-1),
-        var(--center-2),
-        var(--center-3)
-    );
+    background-image: linear-gradient(var(--center-1), var(--center-2), var(--center-3));
 
     box-shadow:
         0 0 0.5px var(--center-3),
@@ -1029,11 +1021,7 @@ body {
     top: 22px;
 
     background-image:
-        linear-gradient(
-            rgba(30, 31, 57, 0),
-            rgba(30, 31, 57, 0.5),
-            rgba(30, 31, 57, 0)
-        ),
+        linear-gradient(rgba(30, 31, 57, 0), rgba(30, 31, 57, 0.5), rgba(30, 31, 57, 0)),
         linear-gradient(#09080e, #0a090f);
 
     box-shadow:

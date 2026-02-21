@@ -8,7 +8,7 @@ let octaveLevel = 1; // 0: Off (낮은 옥타브), 1: Organ (기본), 2: Organ &
 const octaveMultipliers = [0.5, 1.0, 2.0]; // 옥타브 배율
 let pitchBend = 0; // -1.0 ~ 1.0 (피치 벤드)
 
-const noteChips = ["D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
+const noteChips = [null, "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
 
 // 각 건반에 해당하는 주파수 (Hz)
 const keyFrequencies = [
@@ -29,9 +29,6 @@ const noteNames = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
 
 // 피치 벤드 계산 (±2 반음)
 function getPitchBendMultiplier() {
-  // pitchBend: -1.0 ~ 1.0 -> ±2 semitones
-  //
-  console.log(pitchBend);
   const semitones = pitchBend * 8;
   return Math.pow(2, semitones / 12);
 }
@@ -58,20 +55,13 @@ function playNote(frequency, noteName) {
   filter.frequency.value = 3000; // 2k~4k 사이 조절
   filter.Q.value = 0.7;
   currentOscillator.type = "square"; // 사인파 (부드러운 소리)
-  const adjustedFrequency =
-    frequency * octaveMultipliers[octaveLevel] * getPitchBendMultiplier();
-  currentOscillator.frequency.setValueAtTime(
-    adjustedFrequency,
-    audioContext.currentTime,
-  );
+  const adjustedFrequency = frequency * octaveMultipliers[octaveLevel] * getPitchBendMultiplier();
+  currentOscillator.frequency.setValueAtTime(adjustedFrequency, audioContext.currentTime);
 
   // 볼륨 설정 (페이드 인 효과)
   const targetVolume = volumeLevels[volumeLevel];
   currentGainNode.gain.setValueAtTime(0, audioContext.currentTime);
-  currentGainNode.gain.linearRampToValueAtTime(
-    targetVolume,
-    audioContext.currentTime + 0.05,
-  );
+  currentGainNode.gain.linearRampToValueAtTime(targetVolume, audioContext.currentTime + 0.05);
 
   // 연결: Oscillator -> Filter -> Gain -> Destination (스피커)
   currentOscillator.connect(filter);
@@ -95,10 +85,7 @@ function updatePitchBend(newPitchBend) {
   if (currentOscillator && audioContext) {
     const baseFreq = currentOscillator.frequency.value;
     const newFreq = baseFreq * getPitchBendMultiplier();
-    currentOscillator.frequency.setValueAtTime(
-      newFreq,
-      audioContext.currentTime,
-    );
+    currentOscillator.frequency.setValueAtTime(newFreq, audioContext.currentTime);
   }
 }
 
@@ -119,10 +106,7 @@ function stopNote() {
       if (currentGain > 0.0001) {
         gainNodeToStop.gain.cancelScheduledValues(currentTime);
         gainNodeToStop.gain.setValueAtTime(currentGain, currentTime);
-        gainNodeToStop.gain.exponentialRampToValueAtTime(
-          0.0001,
-          currentTime + fadeOutTime,
-        );
+        gainNodeToStop.gain.exponentialRampToValueAtTime(0.0001, currentTime + fadeOutTime);
       }
 
       // 페이드 아웃 후 완전히 중지
@@ -149,18 +133,62 @@ function updateButtonVisibility() {
   const allButtons = buttonContainer.querySelectorAll(".button");
 
   // 모든 버튼을 숨김 처리
-  allButtons.forEach((button) => (button.style.display = "none"));
+  allButtons.forEach((button) => {
+    button.style.display = "none";
+  });
 
   // noteChips에 있는 버튼만 표시
   noteChips.forEach((noteName) => {
-    const className = noteName.toLowerCase();
-    const button = buttonContainer.querySelector(`.button.${className}`);
-    const letterIndex = noteNames.indexOf(noteName);
+    if (noteName != null) {
+      const className = noteName.toLowerCase();
+      const button = buttonContainer.querySelector(`.button.${className}`);
 
-    if (button) button.style.display = "";
+      if (button) button.style.display = "";
+    }
   });
 
   console.log(`Visible buttons: ${noteChips.join(", ")}`);
+}
+
+const playing = new Set();
+
+function setupKeyboard() {
+  const keymaps = ["a", "s", "d", "f", "g", "h", "j", "k", "l", ";"];
+  const noteKeymap = {
+    a: "c4",
+    s: "d4",
+    d: "e4",
+    f: "f4",
+    g: "g4",
+    h: "a4",
+    j: "b4",
+    k: "c5",
+    l: "d5",
+    ";": "e5",
+  };
+
+  const getElement = (key) => document.getElementById(`${noteKeymap[key]}-key`);
+
+  window.addEventListener("keydown", (e) => {
+    const keyMapIdx = keymaps.indexOf(e.key);
+    const noteName = noteNames[keyMapIdx];
+    if (keyMapIdx !== -1 && !playing.has(noteName)) {
+      e.preventDefault();
+      playNote(keyFrequencies[keyMapIdx], noteName);
+      getElement(e.key).classList.add("pressed");
+      playing.add(noteName);
+    }
+  });
+  window.addEventListener("keyup", (e) => {
+    const keyMapIdx = keymaps.indexOf(e.key);
+    const noteName = noteNames[keyMapIdx];
+    if (keyMapIdx !== -1) {
+      e.preventDefault();
+      stopNote();
+      getElement(e.key).classList.remove("pressed");
+      playing.delete(noteName);
+    }
+  });
 }
 
 // DOM이 로드되면 이벤트 리스너 추가
@@ -218,6 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 피치 벤드 슬라이더 설정
   setupPitchBendControl();
+  setupKeyboard();
 
   console.log("Muson Synth initialized! Hover over the keys to play notes.");
 });

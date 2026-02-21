@@ -8,7 +8,7 @@ let octaveLevel = 1; // 0: Off (낮은 옥타브), 1: Organ (기본), 2: Organ &
 const octaveMultipliers = [0.5, 1.0, 2.0]; // 옥타브 배율
 let pitchBend = 0; // -1.0 ~ 1.0 (피치 벤드)
 
-const noteChips = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
+const noteChips = ["D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
 
 // 각 건반에 해당하는 주파수 (Hz)
 const keyFrequencies = [
@@ -142,8 +142,32 @@ function stopNote() {
   }
 }
 
+// noteChips에 따라 버튼을 표시/숨김하는 함수
+function updateButtonVisibility() {
+  const buttonContainer = document.querySelector(".button-container");
+
+  const allButtons = buttonContainer.querySelectorAll(".button");
+
+  // 모든 버튼을 숨김 처리
+  allButtons.forEach((button) => (button.style.display = "none"));
+
+  // noteChips에 있는 버튼만 표시
+  noteChips.forEach((noteName) => {
+    const className = noteName.toLowerCase();
+    const button = buttonContainer.querySelector(`.button.${className}`);
+    const letterIndex = noteNames.indexOf(noteName);
+
+    if (button) button.style.display = "";
+  });
+
+  console.log(`Visible buttons: ${noteChips.join(", ")}`);
+}
+
 // DOM이 로드되면 이벤트 리스너 추가
 document.addEventListener("DOMContentLoaded", () => {
+  // noteChips에 따라 버튼 표시/숨김
+  updateButtonVisibility();
+
   const keyContainer = document.querySelector(".key-container");
   const keys = keyContainer.querySelectorAll("div");
 
